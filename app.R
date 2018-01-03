@@ -14,16 +14,11 @@ names(image_data)[2] <- "keep"
 ### INTERFACE
 #######################################################
 
-in4 <- uiOutput("load")
-
 in1 <-   radioButtons("truefalse", "Change values in 'keep' column here", 
                       choices=c("TRUE", "FALSE"),
                       selected = "TRUE", inline = FALSE)
 in2 <-   actionButton("goButton", "Update Table")
 in3 <-   downloadButton("download_data", label = "Download")
-
-# # sidebar with buttons
-# side1 <- sidebarPanel(in1, in2, in3)
 
 out1 <- htmlOutput("image1")
 out2 <- dataTableOutput("image_data", width = "30%")
@@ -45,11 +40,6 @@ ui <- fluidPage(titlePanel("Image Viewer"),
 #######################################################
 server <- function(input, output){
 
-  output$load <- renderUI({
-    choices <- list.files(pattern="*.csv")
-    selectInput("input_file", "Select input file", choices)
-  })
-  
   # reactive dataframe object
   df <- eventReactive(input$goButton, {
      if(selected_row_id()>0 &&input$goButton>0){  
@@ -63,7 +53,6 @@ server <- function(input, output){
     df()
   }, selection = "single")
 
- 
   # selected row ID from data table
   selected_row_id <- reactive({
     input$image_data_rows_selected
@@ -77,12 +66,11 @@ server <- function(input, output){
   # html string of image
   output$image1<-renderText({c('<img src="',image_data[input$image_data_rows_selected, "image_url"],'">')})
   
-  # Save input$bins when click the button
+  # Save when click the button
   observeEvent(input$save, {
     write.csv(image_data, input$save_file, row.names = FALSE)
   })
   
-  # this is a new line
   # download button
   output$download_data <- downloadHandler(
     filename = "updated_data.csv",
